@@ -1,3 +1,4 @@
+from sqlalchemy import and_
 from sqlalchemy.orm import Session
 from database.models import Problem, Tag, ProblemToTag
 from database import schemas
@@ -43,3 +44,28 @@ def add_tag_to_problem(session: Session, problem_id: str, tag_id: int) -> Proble
     session.commit()
     session.refresh(db_tag)
     return db_tag
+
+
+def get_tags(session: Session) -> list:
+    return session.query(Tag.name).all()
+
+
+def get_complexity(session: Session) -> list:
+    return session.query(Problem.complexity).group_by(Problem.complexity).all()
+
+
+def check_complexity(session: Session, complexity: int):
+    return session.query(Problem.complexity).where(Problem.complexity == complexity).first()
+
+
+def get_problems(session: Session, tag: Tag, complexity: int):
+    problems_id = [el[0] for el in
+                   session.query(ProblemToTag.problem_id).where(
+                       ProblemToTag.tag_id == tag.id).all()]
+    problems = session.query(Problem).where(
+        and_(Problem.is_used == False, Problem.complexity == complexity)).filter(
+        Problem.id.in_(problems_id)).all()[:10]
+    for problem in problems:
+        problem.is_used = True
+    session.commit()
+    return [el.id for el in problems]
