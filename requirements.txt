@@ -1,0 +1,7 @@
+aiohttp
+bs4
+sqlalchemy
+python-dotenv
+psycopg2
+SQLAlchemy-serializer
+pydantic
