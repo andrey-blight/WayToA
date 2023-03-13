@@ -69,3 +69,9 @@ def get_problems(session: Session, tag: Tag, complexity: int):
         problem.is_used = True
     session.commit()
     return [el.id for el in problems]
+
+
+def get_problem_tags(session: Session, problem_id: str) -> list:
+    tag_id = [el[0] for el in session.query(ProblemToTag.tag_id).where(
+        ProblemToTag.problem_id == problem_id).all()]
+    return [el[0] for el in session.query(Tag.name).filter(Tag.id.in_(tag_id)).all()]

@@ -20,6 +20,11 @@ def start_message(message):
 
 @bot.message_handler()
 def start_message(message: telebot.types.Message):
+    if message.from_user.id not in statuses:
+        statuses[message.from_user.id] = "question"
+        bot.send_message(message.chat.id, "Нажмите 1 если хотите узнать информацию о задаче\n"
+                                          "Нажмите 2 если хотите составить контест")
+        return
     session = next(get_session())
     status = statuses[message.from_user.id]
     if status == "question":
@@ -27,7 +32,7 @@ def start_message(message: telebot.types.Message):
         if text == "1":
             statuses[message.from_user.id] = "task_info"
             bot.send_message(message.chat.id, "Введите номер задачи")
-        else:
+        elif text == "2":
             statuses[message.from_user.id] = "create_contest"
             bot.send_message(message.chat.id, "Введите тему и сложность из списка через пробел")
             tags_str = ""
@@ -38,14 +43,23 @@ def start_message(message: telebot.types.Message):
             for complexity_index, complexity in enumerate(crud.get_complexity(session)):
                 complexity_str += f"\n{complexity_index}:\t{complexity[0]}"
             bot.send_message(message.chat.id, complexity_str[1:])
+        else:
+            bot.send_message(message.chat.id, "Бот не смог распознать ответ")
+            statuses[message.from_user.id] = "question"
+            bot.send_message(message.chat.id, "Нажмите 1 если хотите узнать информацию о задаче\n"
+                                              "Нажмите 2 если хотите составить контест")
+            return
     elif status == "task_info":
         problem = crud.get_problem_by_id(session, message.text.strip())
+        tags = crud.get_problem_tags(session, problem.id)
         if problem is None:
             bot.send_message(message.chat.id, "Кажется такой задачи не существует")
         else:
             bot.send_message(message.chat.id,
                              f"Название: {problem.name};\tКоличество решивших: {problem.solve_count};\t"
                              f"Сложность {problem.complexity};\t{'Использовалась' if problem.is_used else 'Не использовалась'}")
+            bot.send_message(message.chat.id,
+                             f"Задача на темы: {', '.join(tags)}")
         statuses[message.from_user.id] = "question"
         bot.send_message(message.chat.id, "Нажмите 1 если хотите узнать информацию о задаче\n"
                                           "Нажмите 2 если хотите составить контест")

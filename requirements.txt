@@ -2,7 +2,7 @@ aiohttp
 bs4
 sqlalchemy
 python-dotenv
-psycopg2
+psycopg2-binary
 SQLAlchemy-serializer
 pydantic
 pyTelegramBotAPI

@@ -9,7 +9,7 @@ URL = "https://codeforces.com/problemset"
 
 
 async def get_bs_by_url(url: str) -> BeautifulSoup:
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
         async with session.get(url) as resp:
             text = await resp.read()
     return BeautifulSoup(text.decode('utf-8'), "html.parser")
